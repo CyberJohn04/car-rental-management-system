@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import CarCard from '../components/CarCard';
+import VehicleDetailModal from '../components/VehicleDetailModal';
 import { useVehicles } from '../context/VehicleContext';
 import easyPickupIcon from '../assets/images/easypickup.png';
 import affordableIcon from '../assets/images/affordable.png';
@@ -11,6 +12,8 @@ const LandingPage = () => {
   const [loading, setLoading] = useState(true);
   const [modalMode, setModalMode] = useState('signUp');
   const [modalActive, setModalActive] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [vehicleModalActive, setVehicleModalActive] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -28,8 +31,22 @@ const LandingPage = () => {
   }, [getActiveVehicles]);
 
   const handleRentCar = (car) => {
-    // In a real app, this would navigate to booking page
-    console.log('Rent car:', car);
+    // Show vehicle details modal
+    setSelectedVehicle(car);
+    setVehicleModalActive(true);
+  };
+
+  const handleVehicleModalClose = () => {
+    setVehicleModalActive(false);
+    setSelectedVehicle(null);
+  };
+
+  const handleBookingClick = (vehicle) => {
+    // If user is not logged in, show login modal
+    // Otherwise navigate to booking page
+    console.log('Book car:', vehicle);
+    handleVehicleModalClose();
+    // You can add navigation to booking page here if needed
   };
 
   const openModal = (mode) => {
@@ -174,7 +191,13 @@ const LandingPage = () => {
         )}
       </section>
 
-
+      {/* Vehicle Detail Modal */}
+      <VehicleDetailModal
+        vehicle={selectedVehicle}
+        isOpen={vehicleModalActive}
+        onClose={handleVehicleModalClose}
+        onBooking={handleBookingClick}
+      />
 
       {/* SignUp / LogIn Modal */}
       <div className={`modal-overlay ${modalActive ? 'active' : ''}`} role="dialog" aria-modal="true" aria-labelledby="modalTitle" onClick={(e) => e.target === e.currentTarget && closeModal()}>

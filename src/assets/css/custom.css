@@ -2057,3 +2057,266 @@ button:focus {
   }
 }
 
+/* ============================================
+   Vehicle Detail Modal Styles
+   ============================================ */
+.vehicle-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.vehicle-modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.vehicle-modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 32px;
+  cursor: pointer;
+  color: #666;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.vehicle-modal-close:hover {
+  background-color: #f0f0f0;
+  color: #000;
+}
+
+.vehicle-modal-image {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+  border-radius: 12px 12px 0 0;
+}
+
+.vehicle-modal-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.availability-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.availability-badge.available {
+  background-color: #10b981;
+  color: white;
+}
+
+.availability-badge.unavailable {
+  background-color: #ef4444;
+  color: white;
+}
+
+.vehicle-modal-details {
+  padding: 30px;
+}
+
+.vehicle-modal-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 5px 0;
+  color: #1e293b;
+}
+
+.vehicle-modal-name {
+  font-size: 16px;
+  color: #64748b;
+  margin: 0 0 20px 0;
+}
+
+.vehicle-info-section {
+  margin-bottom: 25px;
+}
+
+.vehicle-info-section .info-label {
+  display: block;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.info-item .info-label {
+  margin: 0;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: none;
+  font-size: 14px;
+}
+
+.info-item .info-value {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.info-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.price-highlight {
+  color: #10b981;
+  font-size: 20px !important;
+  font-weight: 700;
+}
+
+.vehicle-description {
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+  padding: 10px 0;
+}
+
+.features-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.feature-tag {
+  background-color: #e0e7ff;
+  color: #4f46e5;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.vehicle-modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-book-now {
+  flex: 1;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-book-now:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-unavailable {
+  flex: 1;
+  background-color: #94a3b8;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.btn-close-modal {
+  flex: 1;
+  background-color: #e2e8f0;
+  color: #1e293b;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-close-modal:hover {
+  background-color: #cbd5e1;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .vehicle-modal-content {
+    max-width: 100%;
+    max-height: 95vh;
+  }
+
+  .vehicle-modal-details {
+    padding: 20px;
+  }
+
+  .vehicle-modal-title {
+    font-size: 22px;
+  }
+
+  .vehicle-modal-image {
+    height: 200px;
+  }
+
+  .info-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .vehicle-modal-actions {
+    flex-direction: column;
+  }
+
+  .btn-book-now,
+  .btn-close-modal,
+  .btn-unavailable {
+    width: 100%;
+  }
+}
+

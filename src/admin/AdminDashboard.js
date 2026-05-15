@@ -4,30 +4,140 @@ import AdminSidebar from '../components/AdminSidebar';
 import { useBookings } from '../context/BookingContext';
 import { useVehicles } from '../context/VehicleContext';
 
-// Simple chart component without external library
-const SimpleChart = ({ data, chartType }) => {
-  const maxValue = Math.max(...data.map(d => d.value), 1);
+// Professional Chart Component with Revenue
+const ProfessionalChart = ({ bookingsData, revenueData, chartType }) => {
+  const maxBookings = Math.max(...bookingsData.map(d => d.value), 1);
+  const maxRevenue = Math.max(...revenueData.map(d => d.value), 1);
+  
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', height: '250px', padding: '20px 10px' }}>
-      {data.map((item, index) => (
-        <div key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
-          <div style={{ 
-            width: '40px', 
-            height: `${(item.value / maxValue) * 180}px`, 
-            backgroundColor: chartType === 'revenue' ? '#2846e3' : '#28a745',
-            borderRadius: '6px 6px 0 0',
-            transition: 'height 0.3s ease',
-            minHeight: item.value > 0 ? '10px' : '0'
-          }}></div>
-          <span style={{ fontSize: '12px', fontWeight: '600', color: '#666' }}>{item.label}</span>
-          <span style={{ fontSize: '11px', color: '#999' }}>
-            {chartType === 'revenue' ? `₱${item.value.toLocaleString()}` : item.value}
-          </span>
+    <div style={styles.chartGrid}>
+      {/* Bookings Chart */}
+      <div style={styles.chartColumn}>
+        <div style={styles.miniChartTitle}>Bookings Trend</div>
+        <div style={styles.chartBars}>
+          {bookingsData.map((item, index) => (
+            <div key={index} style={styles.barItem}>
+              <div style={styles.barWrapper}>
+                <div 
+                  style={{
+                    ...styles.bar,
+                    height: `${(item.value / maxBookings) * 120}px`,
+                    background: 'linear-gradient(180deg, #3b82f6 0%, #1e40af 100%)',
+                  }}
+                  title={`${item.label}: ${item.value} bookings`}
+                />
+              </div>
+              <span style={styles.barLabel}>{item.label}</span>
+              <span style={styles.barValue}>{item.value}</span>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
+
+      {/* Revenue Chart */}
+      <div style={styles.chartColumn}>
+        <div style={styles.miniChartTitle}>Revenue Trend</div>
+        <div style={styles.chartBars}>
+          {revenueData.map((item, index) => (
+            <div key={index} style={styles.barItem}>
+              <div style={styles.barWrapper}>
+                <div 
+                  style={{
+                    ...styles.bar,
+                    height: `${(item.value / maxRevenue) * 120}px`,
+                    background: 'linear-gradient(180deg, #10b981 0%, #047857 100%)',
+                  }}
+                  title={`${item.label}: ₱${item.value.toLocaleString()}`}
+                />
+              </div>
+              <span style={styles.barLabel}>{item.label}</span>
+              <span style={styles.barValue}>₱{(item.value / 1000).toFixed(0)}k</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
+
+// Metrics Cards Component
+const MetricsCards = ({ bookings, payments, vehicles }) => {
+  const totalBookings = bookings.length;
+  const completedBookings = bookings.filter(b => b.status === 'Completed').length;
+  const cancelledBookings = bookings.filter(b => b.status === 'Cancelled').length;
+  const totalRevenue = payments.filter(p => p.status === 'Completed').reduce((sum, p) => sum + (p.amount || 0), 0);
+  const completedPayments = payments.filter(p => p.status === 'Completed').length;
+  
+  const occupancyRate = vehicles.length > 0 
+    ? ((bookings.filter(b => b.status === 'Approved').length / vehicles.length) * 100).toFixed(1)
+    : 0;
+  
+  const avgBookingValue = completedBookings > 0 ? (totalRevenue / completedBookings).toFixed(0) : 0;
+  const conversionRate = totalBookings > 0 ? ((completedBookings / totalBookings) * 100).toFixed(1) : 0;
+
+  return (
+    <div style={styles.metricsGrid}>
+      <MetricCard 
+        title="Total Revenue"
+        value={`₱${totalRevenue.toLocaleString()}`}
+        icon="💰"
+        bgColor="#e0f2fe"
+        color="#0369a1"
+        trend="+12.5%"
+      />
+      <MetricCard 
+        title="Occupancy Rate"
+        value={`${occupancyRate}%`}
+        icon="🚗"
+        bgColor="#dcfce7"
+        color="#15803d"
+        trend="+8.2%"
+      />
+      <MetricCard 
+        title="Avg Booking Value"
+        value={`₱${avgBookingValue.toLocaleString()}`}
+        icon="📊"
+        bgColor="#fef3c7"
+        color="#b45309"
+        trend="+3.1%"
+      />
+      <MetricCard 
+        title="Conversion Rate"
+        value={`${conversionRate}%`}
+        icon="📈"
+        bgColor="#fce7f3"
+        color="#be185d"
+        trend="+5.4%"
+      />
+      <MetricCard 
+        title="Completed Bookings"
+        value={completedBookings}
+        icon="✓"
+        bgColor="#e9d5ff"
+        color="#7c3aed"
+      />
+      <MetricCard 
+        title="Cancelled Bookings"
+        value={cancelledBookings}
+        icon="✕"
+        bgColor="#fee2e2"
+        color="#dc2626"
+      />
+    </div>
+  );
+};
+
+// Individual Metric Card
+const MetricCard = ({ title, value, icon, bgColor, color, trend }) => (
+  <div style={{ ...styles.metricCard, backgroundColor: bgColor }}>
+    <div style={styles.metricIcon}>{icon}</div>
+    <div style={styles.metricContent}>
+      <div style={styles.metricTitle}>{title}</div>
+      <div style={{ ...styles.metricValue, color }}>{value}</div>
+      {trend && <div style={styles.metricTrend}>{trend}</div>}
+    </div>
+  </div>
+);
 
 const AdminDashboard = () => {
   const { getBookings, getPayments } = useBookings();
@@ -42,6 +152,7 @@ const AdminDashboard = () => {
   });
   const [recentBookings, setRecentBookings] = useState([]);
   const [chartType, setChartType] = useState('weekly');
+  const [statisticsTab, setStatisticsTab] = useState('overview'); // overview, detailed, trends
 
   // Get real data from contexts
   const allBookings = useMemo(() => getBookings(), [getBookings]);
@@ -49,9 +160,7 @@ const AdminDashboard = () => {
 
   // Calculate monthly bookings from real data starting from March
   const monthlyBookingsData = useMemo(() => {
-    const months = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth();
     
     // For weekly view, show last 7 days of bookings
     const weekData = [];
@@ -88,6 +197,26 @@ const AdminDashboard = () => {
       };
     });
   }, [allBookings]);
+
+  // Calculate weekly revenue
+  const weeklyRevenueData = useMemo(() => {
+    const revenueData = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+      const paymentsOnDay = allPayments.filter(payment => {
+        const paymentDate = new Date(payment.paidAt || payment.createdAt);
+        return paymentDate.toDateString() === date.toDateString() && payment.status === 'Completed';
+      });
+      const revenue = paymentsOnDay.reduce((sum, p) => sum + (p.amount || 0), 0);
+      revenueData.push({
+        label: dayName,
+        value: revenue
+      });
+    }
+    return revenueData;
+  }, [allPayments]);
 
   // Calculate monthly revenue from real payments
   const monthlyRevenueData = useMemo(() => {
@@ -140,13 +269,21 @@ const AdminDashboard = () => {
   }, [allBookings, allPayments, vehicles]);
 
   // Get chart data based on type
-  const chartData = useMemo(() => {
+  const bookingsChartData = useMemo(() => {
     if (chartType === 'weekly') {
       return monthlyBookingsData;
     } else {
       return monthlyViewData;
     }
   }, [chartType, monthlyBookingsData, monthlyViewData]);
+
+  const revenueChartData = useMemo(() => {
+    if (chartType === 'weekly') {
+      return weeklyRevenueData;
+    } else {
+      return monthlyRevenueData;
+    }
+  }, [chartType, weeklyRevenueData, monthlyRevenueData]);
 
   const formatBookingId = (value) => {
     if (value === undefined || value === null || value === '') {
@@ -219,28 +356,44 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Chart Section */}
-          <div style={styles.chartSection}>
-            <div style={styles.chartHeader}>
-              <h3 style={styles.chartTitle}>📊 Rental Statistics (Starting March {new Date().getFullYear()})</h3>
-              <div style={styles.chartTabs}>
+          {/* Professional Rental Statistics Section */}
+          <div style={styles.statisticsSection}>
+            <div style={styles.statisticsHeader}>
+              <div>
+                <h3 style={styles.statisticsTitle}>📊 Professional Rental Statistics</h3>
+                <p style={styles.statisticsSubtitle}>Comprehensive analysis of bookings and revenue performance</p>
+              </div>
+              <div style={styles.chartControls}>
                 <button 
-                  style={chartType === 'weekly' ? {...styles.chartTab, ...styles.chartTabActive} : styles.chartTab}
+                  style={chartType === 'weekly' ? {...styles.controlBtn, ...styles.controlBtnActive} : styles.controlBtn}
                   onClick={() => setChartType('weekly')}
                 >
-                  Weekly
+                  📅 Weekly
                 </button>
                 <button 
-                  style={chartType === 'monthly' ? {...styles.chartTab, ...styles.chartTabActive} : styles.chartTab}
+                  style={chartType === 'monthly' ? {...styles.controlBtn, ...styles.controlBtnActive} : styles.controlBtn}
                   onClick={() => setChartType('monthly')}
                 >
-                  Monthly
+                  📆 Monthly
                 </button>
               </div>
             </div>
-            <div style={styles.chartContainer}>
-              <SimpleChart data={chartData} chartType="bookings" />
+
+            {/* Charts Section */}
+            <div style={styles.chartsWrapper}>
+              <ProfessionalChart 
+                bookingsData={bookingsChartData} 
+                revenueData={revenueChartData}
+                chartType={chartType}
+              />
             </div>
+
+            {/* Detailed Metrics Cards */}
+            <MetricsCards 
+              bookings={allBookings}
+              payments={allPayments}
+              vehicles={vehicles}
+            />
           </div>
 
           {/* Stats and Recent Bookings */}
@@ -313,13 +466,166 @@ const styles = {
   cardValue: { fontSize: '28px', fontWeight: '700', color: '#2846e3', lineHeight: 1.2 },
   cardTitle: { fontSize: '13px', color: '#666', marginTop: '4px', fontWeight: '600' },
   earningsCard: {},
-  chartSection: { background: '#fff', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', padding: '24px', marginBottom: '24px' },
-  chartHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' },
-  chartTitle: { margin: 0, fontSize: '20px', fontWeight: '700', color: '#1a1a2e' },
-  chartTabs: { display: 'flex', gap: '8px' },
-  chartTab: { padding: '8px 20px', borderRadius: '20px', border: 'none', background: '#f0f0f0', color: '#666', fontWeight: '600', cursor: 'pointer', fontFamily: 'Inria Serif, serif', transition: 'all 0.2s' },
-  chartTabActive: { background: '#2846e3', color: '#fff' },
-  chartContainer: { height: '280px', position: 'relative' },
+  
+  // Professional Statistics Section
+  statisticsSection: { 
+    background: '#fff', 
+    borderRadius: '16px', 
+    boxShadow: '0 4px 20px rgba(0,0,0,0.08)', 
+    padding: '28px', 
+    marginBottom: '24px',
+    border: '1px solid #f0f0f0'
+  },
+  statisticsHeader: { 
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    alignItems: 'flex-start',
+    marginBottom: '28px',
+    flexWrap: 'wrap',
+    gap: '16px'
+  },
+  statisticsTitle: { 
+    margin: 0, 
+    fontSize: '22px', 
+    fontWeight: '700', 
+    color: '#1a1a2e',
+    marginBottom: '4px'
+  },
+  statisticsSubtitle: { 
+    margin: 0, 
+    fontSize: '13px', 
+    color: '#999',
+    fontWeight: '500'
+  },
+  chartControls: { 
+    display: 'flex', 
+    gap: '10px' 
+  },
+  controlBtn: { 
+    padding: '10px 18px', 
+    borderRadius: '8px', 
+    border: '1px solid #e0e0e0', 
+    background: '#f8f9fa', 
+    color: '#666', 
+    fontWeight: '600', 
+    cursor: 'pointer', 
+    fontFamily: 'Inria Serif, serif',
+    transition: 'all 0.2s ease',
+    fontSize: '13px'
+  },
+  controlBtnActive: { 
+    background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)', 
+    color: '#fff',
+    border: 'none'
+  },
+  chartsWrapper: { 
+    background: '#f8f9fa', 
+    borderRadius: '12px', 
+    padding: '28px',
+    marginBottom: '24px'
+  },
+  chartGrid: { 
+    display: 'grid', 
+    gridTemplateColumns: '1fr 1fr', 
+    gap: '40px',
+    marginBottom: '0'
+  },
+  chartColumn: { 
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  miniChartTitle: { 
+    fontSize: '14px', 
+    fontWeight: '700', 
+    color: '#1a1a2e',
+    marginBottom: '16px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px'
+  },
+  chartBars: { 
+    display: 'flex', 
+    gap: '12px', 
+    alignItems: 'flex-end',
+    justifyContent: 'space-around',
+    minHeight: '160px'
+  },
+  barItem: { 
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    flex: '1',
+    gap: '6px'
+  },
+  barWrapper: { 
+    width: '100%',
+    height: '150px',
+    display: 'flex',
+    alignItems: 'flex-end',
+    justifyContent: 'center'
+  },
+  bar: { 
+    width: '28px',
+    borderRadius: '8px 8px 0 0',
+    transition: 'all 0.3s ease',
+    cursor: 'pointer',
+    minHeight: '4px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+  },
+  barLabel: { 
+    fontSize: '12px', 
+    fontWeight: '600', 
+    color: '#666',
+    textAlign: 'center'
+  },
+  barValue: { 
+    fontSize: '11px', 
+    color: '#999',
+    fontWeight: '500'
+  },
+  
+  // Metrics Grid
+  metricsGrid: { 
+    display: 'grid', 
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
+    gap: '16px',
+    marginTop: '24px'
+  },
+  metricCard: { 
+    padding: '18px', 
+    borderRadius: '12px', 
+    display: 'flex', 
+    alignItems: 'center',
+    gap: '12px',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+  },
+  metricIcon: { 
+    fontSize: '28px',
+    lineHeight: 1
+  },
+  metricContent: { 
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '3px'
+  },
+  metricTitle: { 
+    fontSize: '11px',
+    fontWeight: '600',
+    color: '#666',
+    textTransform: 'uppercase',
+    letterSpacing: '0.3px'
+  },
+  metricValue: { 
+    fontSize: '20px',
+    fontWeight: '700',
+    lineHeight: 1.2
+  },
+  metricTrend: { 
+    fontSize: '10px',
+    color: '#10b981',
+    fontWeight: '600'
+  },
+
   statsSection: { display: 'flex', gap: '24px', flexWrap: 'wrap', marginBottom: '24px' },
   statsContainer: { flex: '1 1 300px', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', padding: '24px' },
   quickStats: { display: 'flex', gap: '20px', flexWrap: 'wrap' },

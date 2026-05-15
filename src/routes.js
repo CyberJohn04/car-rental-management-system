@@ -6,6 +6,7 @@ import { useAuth } from './context/AuthContext';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './user/Dashboard';
 import BrowseCars from './user/BrowseCars';
 import MyBookings from './user/MyBookings';
@@ -99,6 +100,14 @@ const AppRoutes = () => {
         element={
           <PublicRoute>
             <Signup />
+          </PublicRoute>
+        } 
+      />
+      <Route 
+        path="/forgot-password" 
+        element={
+          <PublicRoute>
+            <ForgotPassword />
           </PublicRoute>
         } 
       />

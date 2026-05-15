@@ -8,13 +8,16 @@ const CarCard = ({ car, onRent }) => {
     brand,
     model,
     year,
-    pricePerDay,
+    price,
     image,
     category,
     seats,
     fuelType,
     transmission,
-    available
+    availability,
+    color,
+    description,
+    features
   } = car;
 
   const handleRentClick = () => {
@@ -24,10 +27,11 @@ const CarCard = ({ car, onRent }) => {
   };
 
   // Format price with Philippine Peso symbol
-  const formattedPrice = pricePerDay ? `₱${pricePerDay.toLocaleString()}/day` : '₱0/day';
+  const formattedPrice = price ? `₱${price.toLocaleString()}/day` : '₱0/day';
+  const isAvailable = availability !== false;
 
   return (
-    <div className={`car-card-landing ${!available ? 'unavailable' : ''}`}>
+    <div className={`car-card-landing ${!isAvailable ? 'unavailable' : ''}`}>
       <div className="car-image-landing">
         <img 
           src={image || '/assets/images/car1.jpg'} 
@@ -45,9 +49,8 @@ const CarCard = ({ car, onRent }) => {
       <button 
         className="btn-view-details" 
         onClick={handleRentClick}
-        disabled={!available}
       >
-        {available ? 'View Details' : 'Not Available'}
+        {isAvailable ? 'View Details' : 'Not Available'}
       </button>
     </div>
   );

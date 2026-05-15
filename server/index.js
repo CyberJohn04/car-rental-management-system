@@ -395,8 +395,100 @@ app.get(['/api/auth/me', '/auth/me'], requireAuth, (req, res) => {
   res.json({ user: sanitizeUser(req.user) });
 });
 
-app.post(['/api/auth/forgot-password', '/auth/forgot-password'], (_req, res) => {
-  res.json({ message: 'Password reset is not configured in this local environment yet.' });
+// In-memory storage for password reset tokens (use Redis or DB in production)
+const passwordResetTokens = new Map();
+
+app.post(['/api/auth/forgot-password', '/auth/forgot-password'], async (req, res) => {
+  try {
+    const email = String(req.body?.email || '').trim().toLowerCase();
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required.' });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Don't reveal if email exists for security, but in demo we can be helpful
+      return res.status(200).json({ 
+        message: 'If an account with this email exists, a reset code has been sent.' 
+      });
+    }
+
+    // Generate a random 6-digit code
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Store the reset token with expiration (10 minutes)
+    const expiresAt = Date.now() + 10 * 60 * 1000;
+    passwordResetTokens.set(email, { code: resetCode, expiresAt });
+
+    // In a real app, send email here. For demo, log it
+    console.log(`\n=== PASSWORD RESET CODE ===`);
+    console.log(`Email: ${email}`);
+    console.log(`Code: ${resetCode}`);
+    console.log(`Expires in: 10 minutes\n`);
+
+    return res.status(200).json({ 
+      message: 'Password reset code sent to your email.',
+      // For demo purposes only - remove in production
+      _demo_code: resetCode
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    return res.status(500).json({ message: 'Failed to process password reset request.' });
+  }
+});
+
+app.post(['/api/auth/reset-password', '/auth/reset-password'], async (req, res) => {
+  try {
+    const email = String(req.body?.email || '').trim().toLowerCase();
+    const resetCode = String(req.body?.verificationCode || '').trim();
+    const newPassword = String(req.body?.newPassword || '');
+
+    if (!email || !resetCode || !newPassword) {
+      return res.status(400).json({ message: 'Email, code, and password are required.' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+    }
+
+    // Check if reset token exists and is valid
+    const tokenData = passwordResetTokens.get(email);
+    if (!tokenData) {
+      return res.status(400).json({ message: 'No reset request found. Please request a new code.' });
+    }
+
+    // Check if token has expired
+    if (Date.now() > tokenData.expiresAt) {
+      passwordResetTokens.delete(email);
+      return res.status(400).json({ message: 'Reset code has expired. Please request a new one.' });
+    }
+
+    // Check if code is correct
+    if (tokenData.code !== resetCode) {
+      return res.status(400).json({ message: 'Invalid reset code.' });
+    }
+
+    // Find user and update password
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Hash and update password
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    // Clear the reset token
+    passwordResetTokens.delete(email);
+
+    return res.status(200).json({ 
+      message: 'Password has been reset successfully.' 
+    });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    return res.status(500).json({ message: 'Failed to reset password.' });
+  }
 });
 
 app.get(['/api/users/profile', '/users/profile'], requireAuth, (req, res) => {
